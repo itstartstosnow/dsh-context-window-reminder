@@ -1,10 +1,10 @@
-# dsh-usage-reminder bundle patch: inserts the Host row that keeps the model
+# dsh-context-window-reminder bundle patch: inserts the Host row that keeps the model
 # informed of its own context-window occupancy.
 #
 # The row takes no `config` here because both settings have defaults
 # (`everySteps: 20`, `includeSubagents: true`). A later profile patch layer can
-# target `id: usage-reminder` to tune them; a patch replaces the whole config,
+# target `id: context-window-reminder` to tune them; a patch replaces the whole config,
 # so restate every field it needs.
 - insert:
-    - id: usage-reminder
-      name: '@itstartstosnow/dsh-usage-reminder'
+    - id: context-window-reminder
+      name: '@itstartstosnow/dsh-context-window-reminder'

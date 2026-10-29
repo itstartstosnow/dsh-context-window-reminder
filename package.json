@@ -1,23 +1,23 @@
 {
-  "name": "@itstartstosnow/dsh-usage-reminder",
+  "name": "@itstartstosnow/dsh-context-window-reminder",
   "version": "0.1.0",
-  "description": "Agent-facing context reminder: injects the model's own context-window usage as fact-only runtime context each turn, so it stops misjudging remaining room. Not a plan/quota usage tracker.",
+  "description": "Tiny agent-facing reminder that injects the model's own context-window usage as one data line each turn; no judgment, advice, or thresholds.",
   "keywords": [
     "dsh",
     "dsh-plugin",
     "deepseek-harness",
     "context-window",
-    "token-usage"
+    "agent-context"
   ],
   "author": "itstartstosnow",
   "license": "MIT",
-  "homepage": "https://github.com/itstartstosnow/dsh-usage-reminder#readme",
+  "homepage": "https://github.com/itstartstosnow/dsh-context-window-reminder#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itstartstosnow/dsh-usage-reminder.git"
+    "url": "git+https://github.com/itstartstosnow/dsh-context-window-reminder.git"
   },
   "bugs": {
-    "url": "https://github.com/itstartstosnow/dsh-usage-reminder/issues"
+    "url": "https://github.com/itstartstosnow/dsh-context-window-reminder/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -37,9 +37,9 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
+    "README.en.md",
     "doc",
-    "LICENSE",
-    "README.en.md"
+    "LICENSE"
   ],
   "scripts": {
     "test": "node --test"
@@ -53,15 +53,9 @@
     "zod": ">=4.4.3"
   },
   "peerDependenciesMeta": {
-    "@deepseek-ai/dsh-llm": {
-      "optional": true
-    },
-    "@deepseek-ai/schemastery": {
-      "optional": true
-    },
-    "zod": {
-      "optional": true
-    }
+    "@deepseek-ai/dsh-llm": { "optional": true },
+    "@deepseek-ai/schemastery": { "optional": true },
+    "zod": { "optional": true }
   },
   "dsh": {
     "engines": {

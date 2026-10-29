@@ -1,5 +1,5 @@
 /**
- * dsh-usage-reminder — keeps the model informed of its own context-window
+ * dsh-context-window-reminder — keeps the model informed of its own context-window
  * occupancy.
  *
  * Why: the host already measures prompt pressure (`contextPressure`) for the
@@ -20,10 +20,10 @@
  * - Unavailable occupancy or window data means no message at all: no
  *   placeholder, no error, and no change to the turn.
  * - Identical numbers inside one turn are not injected twice. The last injected
- *   text is folded from the committed log (`usageReminder` projection), so the
+ *   text is folded from the committed log (`contextWindowReminder` projection), so the
  *   dedup rule survives attachment, restart, and fork.
  *
- * @module dsh-usage-reminder
+ * @module dsh-context-window-reminder
  */
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import z from '@deepseek-ai/schemastery'
@@ -31,7 +31,7 @@ import { z as zod } from 'zod'
 import { formatUsageNotice, injectedTextOf, isInjectionStep } from './lib/usage-notice.js'
 
 /** Stable Cordis plugin name; it is also the durable `source.kind` of the notice. */
-const name = 'usage-reminder'
+const name = 'context-window-reminder'
 
 /** Mount only once the projection registry that holds `contextPressure` is available. */
 const inject = ['sessionProjections']
@@ -46,7 +46,7 @@ const Config = z.object({
 const stateSchema = zod.object({ lastTurnText: zod.string().nullable() })
 
 /** Projection key owned by this plugin (host-only; no `wire` block). */
-const STATE_KEY = 'usageReminder'
+const STATE_KEY = 'contextWindowReminder'
 
 /** Projection key owned by `@deepseek-ai/dsh-token-meter`. */
 const CONTEXT_PRESSURE_KEY = 'contextPressure'
@@ -60,7 +60,7 @@ function apply(ctx, config) {
   const everySteps = config.everySteps ?? 20
   const includeSubagents = config.includeSubagents ?? true
   if (!Number.isSafeInteger(everySteps) || everySteps < 1) {
-    throw new TypeError(`usage-reminder: everySteps must be a positive integer, got ${String(everySteps)}`)
+    throw new TypeError(`context-window-reminder: everySteps must be a positive integer, got ${String(everySteps)}`)
   }
 
   ctx.sessionProjections.register({
@@ -111,7 +111,7 @@ function apply(ctx, config) {
       }
     } catch (error) {
       // Degrade silently: the notice is optional context, never a turn failure.
-      ctx.logger.debug('usage-reminder: skipped this step: %s', error)
+      ctx.logger.debug('context-window-reminder: skipped this step: %s', error)
       return decision
     }
   }

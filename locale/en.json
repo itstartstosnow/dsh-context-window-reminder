@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Context Usage Reminder",
-    "description": "Agent-facing context reminder: injects the model's own context-window occupancy (used, window, percent) into its runtime context each turn. Not a plan/quota usage tracker."
+    "title": "Context Window Reminder",
+    "description": "Tiny agent-facing reminder: injects the model's own context-window usage as one data line each turn; no judgment, advice, or thresholds. Not a plan/quota usage tracker."
   }
 }

@@ -1,8 +1,8 @@
-# dsh-usage-reminder
+# dsh-context-window-reminder
 
 [中文](README.md) | English
 
-A lightweight context-window usage reminder for the agent — not an account/plan usage reminder.
+A lightweight context-window reminder for the agent — not an account/plan usage reminder.
 
 DSH does not proactively inject the model's own context-window usage into each turn. The model sometimes has to guess how much room is left — e.g. it assumes the context is almost full and cuts corners. This plugin adds a lightweight reminder to the prompt telling the agent how much of its context it has used:
 
@@ -11,6 +11,8 @@ Context window: 392k / 1M tokens used (39%)
 ```
 
 ❌ Context only; it does not involve billing, plan, account usage, or any usage data.
+
+It is deliberately minimal: **one data line per injection, with no judgment, advice, thresholds, or status tiers**. How to use that number — whether to rein in, keep going, or plan differently — is left to the model itself.
 
 Works on DeepSeek Harness (dsh) 0.2.1-rc.x. Host-only plugin; once installed it applies to every session.
 
@@ -21,7 +23,7 @@ Before, the model sees no occupancy data anywhere in its context. After, one col
 ```
 you:    refactor this module
         Context window: 392k / 1M tokens used (39%)   ← new, collapsible, not a user message
-model:  ... (knows ~60% is free and can follow the original plan)
+model:  ... (knows ~60% is free; decides itself how to plan)
 ```
 
 - Not a user message: nothing to answer, no tool slot, no extra turn; the model just knows one more fact.
@@ -33,7 +35,7 @@ model:  ... (knows ~60% is free and can follow the original plan)
 
 1. Reads the host's existing context occupancy (`contextPressure`), the same value behind the composer's context ring.
 2. At each turn's first step, and every 20 steps after that, appends one context message with used / window / percent.
-3. Never touches the system prompt, the compaction policy, or the tools; no advice, warnings, or thresholds.
+3. No judgment, no advice, no thresholds; never touches the system prompt, the compaction policy, or the tools.
 4. Degrades silently when either number is unavailable.
 
 Implementation details: [doc/technical.md](doc/technical.md) (Chinese).
@@ -47,20 +49,26 @@ Implementation details: [doc/technical.md](doc/technical.md) (Chinese).
 
 ## Install
 
-Not published yet. Local install:
+npm:
+
+```sh
+dsh plugin --profile <profile> install @itstartstosnow/dsh-context-window-reminder
+```
+
+Local development (link this directory):
 
 - In a dsh session, run `plugin_manager install_bundle` with `target: <absolute path to this directory>`.
 - CLI: `dsh plugin --profile <profile> install link:<absolute path to this directory>`.
 
-Installation usually applies live; after editing the linked code, restart dsh once so the module reloads. Once published to npm: `dsh plugin --profile <profile> install @itstartstosnow/dsh-usage-reminder`.
+Installation usually applies live; after editing the linked code, restart dsh once so the module reloads.
 
 ## Configuration and disabling
 
 Defaults: every 20 steps, subagent sessions included. Override in the profile's `cordis.patch.yml` by row id (a patch replaces the whole config, so restate every field):
 
 ```yaml
-- id: usage-reminder
-  name: '@itstartstosnow/dsh-usage-reminder'
+- id: context-window-reminder
+  name: '@itstartstosnow/dsh-context-window-reminder'
   config:
     everySteps: 20
     includeSubagents: true
@@ -71,8 +79,8 @@ Defaults: every 20 steps, subagent sessions included. Override in the profile's 
 | `everySteps` | `20` | Steps between two injections inside one turn |
 | `includeSubagents` | `true` | Also inject into subagent sessions |
 
-Disable: `plugin_manager set_plugin entryId: include:usage-reminder enabled: false`.
-Remove: `plugin_manager remove_bundle target: @itstartstosnow/dsh-usage-reminder`.
+Disable: `plugin_manager set_plugin entryId: include:context-window-reminder enabled: false`.
+Remove: `plugin_manager remove_bundle target: @itstartstosnow/dsh-context-window-reminder`.
 
 ## Known limitations
 

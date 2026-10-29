@@ -94,10 +94,10 @@ test('injectedTextOf reads the notice back from its committed message', () => {
     id: 'x',
     role: 'user',
     content: [{ type: 'text', text }],
-    source: { kind: 'usage-reminder', form: 'snapshot', sections: [{ name: 'usage-reminder', text }] },
+    source: { kind: 'context-window-reminder', form: 'snapshot', sections: [{ name: 'context-window-reminder', text }] },
   }
   assert.equal(injectedTextOf(message), text)
-  assert.equal(injectedTextOf({ source: { kind: 'usage-reminder' }, content: [{ type: 'text', text }] }), text)
+  assert.equal(injectedTextOf({ source: { kind: 'context-window-reminder' }, content: [{ type: 'text', text }] }), text)
   assert.equal(injectedTextOf({ source: {}, content: [] }), null)
   assert.equal(injectedTextOf(null), null)
   assert.equal(injectedTextOf({}), null)

@@ -1,4 +1,4 @@
-# dsh-usage-reminder — 技术说明
+# dsh-context-window-reminder — 技术说明
 
 面向维护者的实现参考（中文）。用户向说明见 [../README.md](../README.md)（中文）/ [../README.en.md](../README.en.md)（English）。
 
@@ -14,14 +14,14 @@
           本轮 turn N：
             user        用户消息
             user        [宿主内置 runtime-context 快照；内容变化时才有]
-            user        [usage-reminder 注入 ← 第 1 步，紧跟用户消息]
+            user        [context-window-reminder 注入 ← 第 1 步，紧跟用户消息]
             assistant   第 1 步回复 / 工具调用
             tool        第 1 步工具结果
-            user        [usage-reminder 注入 ← 第 21 步，历史尾部]
+            user        [context-window-reminder 注入 ← 第 21 步，历史尾部]
             assistant   第 21 步回复
 ```
 
-注入消息的 `source.kind = "usage-reminder"`，`role = "user"`，`content` 为一整行文本。它不是 inbox 消息：不唤醒 agent、不新开 turn、不占工具位；只是让下一次请求的历史多一条事实。
+注入消息的 `source.kind = "context-window-reminder"`，`role = "user"`，`content` 为一整行文本。它不是 inbox 消息：不唤醒 agent、不新开 turn、不占工具位；只是让下一次请求的历史多一条事实。
 
 ## 数据来源
 
@@ -63,10 +63,10 @@ Context window: 317k / 1M tokens used (32%)
 
 ## 去重
 
-插件注册一个 host-only 投影 `usageReminder`（无 wire view），从已提交日志折叠"本轮上一次注入的文本"：
+插件注册一个 host-only 投影 `contextWindowReminder`（无 wire view），从已提交日志折叠"本轮上一次注入的文本"：
 
 - `turn/start` 时清空；
-- 遇到 `source.kind === "usage-reminder"` 的 `user/message` 时记录其文本；
+- 遇到 `source.kind === "context-window-reminder"` 的 `user/message` 时记录其文本；
 - 其余事件返回同一 state 引用（不产生下游工作）。
 
 注入前比较 `formatUsageNotice()` 的结果与 state：文本相同则跳过。因为状态来自会话日志，重新挂载、重启、fork 后规则仍然成立。
@@ -81,20 +81,20 @@ Context window: 317k / 1M tokens used (32%)
 
 | 文件 | 作用 |
 | --- | --- |
-| `index.js` | Host 插件入口：注册 `usageReminder` 去重投影 + `agent/pre-step` 注入监听 |
+| `index.js` | Host 插件入口：注册 `contextWindowReminder` 去重投影 + `agent/pre-step` 注入监听 |
 | `lib/usage-notice.js` | 纯函数：文案、k/M 紧凑格式、整数百分比、注入步进、从日志消息回读文本（无依赖） |
 | `test/usage-notice.test.js` | `node --test` 单测 |
-| `cordis.patch.yml` | bundle patch：插入 `usage-reminder` 行 |
+| `cordis.patch.yml` | bundle patch：插入 `context-window-reminder` 行 |
 | `locale/{en,zh}.json` | Plugin Manager 显示名与描述 |
 | `icon.svg` | 插件图标 |
 
 ## 配置
 
-`cordis.patch.yml` 插入行不带 `config`，两个字段都有默认值。调整时在 profile 的 `cordis.patch.yml` 按 `id: usage-reminder` 覆盖（patch 是整段替换 config，需写全字段）：
+`cordis.patch.yml` 插入行不带 `config`，两个字段都有默认值。调整时在 profile 的 `cordis.patch.yml` 按 `id: context-window-reminder` 覆盖（patch 是整段替换 config，需写全字段）：
 
 ```yaml
-- id: usage-reminder
-  name: '@itstartstosnow/dsh-usage-reminder'
+- id: context-window-reminder
+  name: '@itstartstosnow/dsh-context-window-reminder'
   config:
     everySteps: 20
     includeSubagents: true
