@@ -1,7 +1,7 @@
 {
   "name": "@itstartstosnow/dsh-usage-reminder",
   "version": "0.1.0",
-  "description": "Tells the model how much of its context window is actually used, as fact-only runtime context, so it stops misjudging remaining room",
+  "description": "Agent-facing context reminder: injects the model's own context-window usage as fact-only runtime context each turn, so it stops misjudging remaining room. Not a plan/quota usage tracker.",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -42,7 +42,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test test/"
+    "test": "node --test"
   },
   "engines": {
     "node": "^22.19.0 || >=24.0.0"
@@ -53,9 +53,15 @@
     "zod": ">=4.4.3"
   },
   "peerDependenciesMeta": {
-    "@deepseek-ai/dsh-llm": { "optional": true },
-    "@deepseek-ai/schemastery": { "optional": true },
-    "zod": { "optional": true }
+    "@deepseek-ai/dsh-llm": {
+      "optional": true
+    },
+    "@deepseek-ai/schemastery": {
+      "optional": true
+    },
+    "zod": {
+      "optional": true
+    }
   },
   "dsh": {
     "engines": {

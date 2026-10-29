@@ -2,7 +2,11 @@
 
 English | [中文](README.zh.md)
 
-Lets the model know how much of its context window is actually used, so it stops guessing "the context is almost full" and quietly narrowing the work.
+**A lightweight context reminder for the agent — not a usage or quota tracker.**
+
+DeepSeek Harness does not inject the model's own context-window usage into the conversation each turn, so the model has to guess how much room is left. It sometimes guesses wrong: it treats roughly 50% used as "almost full" and quietly narrows the work. This plugin adds one small reminder line at the start of each turn that tells the agent its own context usage.
+
+It never reads billing, plan, balance, or quota data, and never shows account usage. Account/plan usage is a different concern, covered by other plugins such as dsh-usage.
 
 For DeepSeek Harness (dsh) 0.2.1-rc.x. Host-only plugin; once installed it applies to every session.
 

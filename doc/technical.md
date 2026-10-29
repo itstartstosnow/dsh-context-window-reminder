@@ -115,7 +115,7 @@ Context window: 317k / 1M tokens used (32%)
 ## 测试与验证
 
 ```sh
-node --test test/    # 9/9
+npm test    # 9/9
 ```
 
 0.2.1-rc.3 / macOS 实测（旧四字段文案时期的数据，取值与步进逻辑不受文案影响）：
