@@ -1,0 +1,12 @@
+# Local-only notes and scratch files; never published or committed.
+local/
+
+# Installed dependencies / generated artifacts
+node_modules/
+*.log
+
+# OS and editor noise
+.DS_Store
+.idea/
+.vscode/
+*.swp

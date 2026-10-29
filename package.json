@@ -1,0 +1,68 @@
+{
+  "name": "@itstartstosnow/dsh-usage-reminder",
+  "version": "0.1.0",
+  "description": "Tells the model how much of its context window is actually used, as fact-only runtime context, so it stops misjudging remaining room",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "context-window",
+    "token-usage"
+  ],
+  "author": "itstartstosnow",
+  "license": "MIT",
+  "homepage": "https://github.com/itstartstosnow/dsh-usage-reminder#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itstartstosnow/dsh-usage-reminder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/itstartstosnow/dsh-usage-reminder/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "icon": "icon.svg",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "README.zh.md",
+    "doc",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-llm": ">=0.2.1-rc.3",
+    "@deepseek-ai/schemastery": ">=3.18.5",
+    "zod": ">=4.4.3"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-llm": { "optional": true },
+    "@deepseek-ai/schemastery": { "optional": true },
+    "zod": { "optional": true }
+  },
+  "dsh": {
+    "engines": {
+      "dsh": ">=0.2.1-rc.3"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

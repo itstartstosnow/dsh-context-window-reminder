@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Context Usage Reminder",
+    "description": "Injects the current context-window occupancy (used, window, percent) into the model's runtime context at the start of each turn and every 20 steps."
+  }
+}
