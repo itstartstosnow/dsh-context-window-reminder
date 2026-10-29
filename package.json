@@ -37,9 +37,9 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
-    "README.zh.md",
     "doc",
-    "LICENSE"
+    "LICENSE",
+    "README.en.md"
   ],
   "scripts": {
     "test": "node --test"

@@ -1,70 +1,69 @@
 # dsh-usage-reminder
 
-English | [中文](README.zh.md)
+中文 | [English](README.en.md)
 
-**A lightweight context reminder for the agent — not a usage or quota tracker.**
+给 agent 的轻量上下文用量提醒，不是账号/套餐用量提醒。
 
-DeepSeek Harness does not inject the model's own context-window usage into the conversation each turn, so the model has to guess how much room is left. It sometimes guesses wrong: it treats roughly 50% used as "almost full" and quietly narrows the work. This plugin adds one small reminder line at the start of each turn that tells the agent its own context usage.
-
-It never reads billing, plan, balance, or quota data, and never shows account usage. Account/plan usage is a different concern, covered by other plugins such as dsh-usage.
-
-For DeepSeek Harness (dsh) 0.2.1-rc.x. Host-only plugin; once installed it applies to every session.
-
-## The problem
-
-dsh already computes token occupancy — the context ring in the composer and the automatic compaction policy both read it. But those numbers never enter the model context: the model can only guess how much room is left from how much it just read.
-
-A real misjudgment: the context was about 495k / 1M tokens used (roughly half full), yet the model decided the context was nearly exhausted and shrank a requested refactor into a partial one. The user had to interrupt and correct it.
-
-This plugin tells the model the numbers the host already measured, at the start of every turn:
+DSH 不会在每轮对话里主动把模型上下文窗口用量注入给模型。模型有时会猜测剩余空间，e.g.，误以为上下文快满了所以偷工减料。本插件会在提示词中增加轻量提醒，告诉 agent 自己用了多少上下文：
 
 ```
 Context window: 392k / 1M tokens used (39%)
 ```
 
-## Before / after
+❌ 仅关注上下文，不涉及账单、套餐、账号用量等 usage 数据。
 
-Before, the model sees no occupancy data anywhere in its context. After, one collapsible context line follows your message:
+适用于 DeepSeek Harness（dsh）0.2.1-rc.x，Host 插件，安装后对所有会话生效。
+
+## 用前 / 用后
+
+用前，模型看不到任何占用数据：
 
 ```
-you:    refactor this module
-        Context window: 392k / 1M tokens used (39%)   ← new, collapsible, not a user message
-model:  ... (knows ~60% is free and can follow the original plan)
+你：帮我重构这个模块
+模型：（只能靠猜……"我读了不少文件，可能快满了"）
 ```
 
-- Not a user message: nothing to answer, no tool slot, no extra turn; the model just knows one more fact.
-- Appended at the tail of history: your messages, the earlier conversation, and the system prompt are untouched.
-- Long turns get a refreshed line every 20 steps (steps 1, 21, 41, …); if the numbers match the last injection, nothing is added.
-- When the host has no measurement yet (for example the first step of a brand-new session), the plugin stays silent — no error, no placeholder.
+用后，你的消息后面多一条可折叠的上下文提示（模型可见，界面上是灰色的"上下文注入"行）：
 
-## How it works
+```
+你：帮我重构这个模块
+   Context window: 392k / 1M tokens used (39%)   ← 新增，可折叠，不是你说的话
+模型：……（知道还有约 60% 空间，可以按原计划做）
+```
 
-1. Reads the host's existing context occupancy (`contextPressure`), the same value behind the composer's context ring.
-2. At each turn's first step, and every 20 steps after that, appends one context message with used / window / percent.
-3. Never touches the system prompt, the compaction policy, or the tools; no advice, warnings, or thresholds.
-4. Degrades silently when either number is unavailable.
+- 这条提示**不是用户消息**：不用回复、不占工具位、不产生新的对话轮次，只是让模型多知道一个事实。
+- 插入位置在历史尾部：你的消息、之前的所有对话、系统提示词都不动。
+- 同一轮里如果步骤很长，每 20 步会再补一条最新数字（第 1、21、41…步）；数字与上次完全相同时不重复。
+- 拿不到占用数据时（比如会话第一步还没有上次请求的计量）就什么都不做，不会报错或留占位。
 
-Implementation details: [doc/technical.md](doc/technical.md) (Chinese).
+## 实现方案（简要）
 
-## Performance
+1. 读取宿主现成的上下文占用（与界面占用环同源），不自己估算、不调模型。
+2. 在每轮第一步、以及每 20 步，把「已用 / 上限 / 百分比」追加成一条独立的上下文消息。
+3. 不改系统提示词、不改压缩策略、不做阈值提醒、不打断任务。
+4. 取不到数字就静默跳过。
 
-- About 13 tokens per injection, at most one every 20 steps; an 80-step turn adds fewer than 60 tokens in total.
-- Appended at the tail only, so the system prompt and the cached history prefix are reused — no cache-breaking change.
-- On other steps it costs one modulo check; no extra model calls, network requests, or perceivable latency.
-- Never triggers a reply, a new turn, or a tool call.
+更细的接入点、数据字段、去重投影和验证记录见 [doc/technical.md](doc/technical.md)（中文）。
 
-## Install
+## 性能影响
 
-Not published yet. Local install:
+- 每次注入约 13 token；每 20 步才一条。一个 80 步的长回合大约 4 条，总计不到 60 token。
+- 只在对话尾部追加，系统提示词和已有历史的缓存前缀完全复用，不会让整段 prompt 重新计费/重算。
+- 非注入步骤只多一次取模判断；没有额外模型请求、没有网络请求、没有可感知延迟。
+- 不改变模型行为之外的任何东西：不触发回复、不新增轮次、不占工具。
 
-- In a dsh session, run `plugin_manager install_bundle` with `target: <absolute path to this directory>`.
-- CLI: `dsh plugin --profile <profile> install link:<absolute path to this directory>`.
+## 安装
 
-Installation usually applies live; after editing the linked code, restart dsh once so the module reloads. Once published to npm: `dsh plugin --profile <profile> install @itstartstosnow/dsh-usage-reminder`.
+目前尚未发布到 npm。两种本地安装方式任选：
 
-## Configuration and disabling
+- 桌面端在会话里让 agent 执行：`plugin_manager install_bundle target: <本目录绝对路径>`
+- CLI：`dsh plugin --profile <profile 名> install link:<本目录绝对路径>`
 
-Defaults: every 20 steps, subagent sessions included. Override in the profile's `cordis.patch.yml` by row id (a patch replaces the whole config, so restate every field):
+安装通常热生效；如果之后修改了本地代码，需要重启一次 DSH 让模块重新加载。发布 npm 之后会改成 `dsh plugin --profile <profile 名> install @itstartstosnow/dsh-usage-reminder`。
+
+## 配置与关闭
+
+默认每 20 步、也覆盖 subagent 会话。要调整就在 profile 的 `cordis.patch.yml` 里按行 id 覆盖：
 
 ```yaml
 - id: usage-reminder
@@ -74,20 +73,19 @@ Defaults: every 20 steps, subagent sessions included. Override in the profile's 
     includeSubagents: true
 ```
 
-| Field | Default | Meaning |
+| 字段 | 默认 | 含义 |
 | --- | --- | --- |
-| `everySteps` | `20` | Steps between two injections inside one turn |
-| `includeSubagents` | `true` | Also inject into subagent sessions |
+| `everySteps` | `20` | 同一轮内再次注入的步数间隔 |
+| `includeSubagents` | `true` | 是否也向子代理会话注入 |
 
-Disable: `plugin_manager set_plugin entryId: include:usage-reminder enabled: false`.
-Remove: `plugin_manager remove_bundle target: @itstartstosnow/dsh-usage-reminder`.
+关闭：`plugin_manager set_plugin entryId: include:usage-reminder enabled: false`；彻底移除：`plugin_manager remove_bundle target: @itstartstosnow/dsh-usage-reminder`。
 
-## Known limitations
+## 已知限制
 
-- The numbers are host estimates (same source as the composer ring), not billing-grade; that is enough for "how much room is left".
-- The message you just sent in the current turn is not included (it is not written to the session when the number is taken), so the real request may be slightly larger.
-- Only the model-visible context changes; the UI meter, compaction, and tool behavior are untouched.
+- 数字是宿主估算（与界面占用环同源），不是 provider 账单级精确值，判断"还剩多少"足够。
+- 不含本轮刚发出、尚未写入会话的那条消息本身，所以可能比最终请求略小一点。
+- 只影响模型可见的上下文，不改变界面仪表、压缩策略或任何工具行为。
 
-## License
+## 许可
 
-MIT — see [LICENSE](LICENSE).
+MIT，见 [LICENSE](LICENSE)。

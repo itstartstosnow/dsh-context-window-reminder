@@ -1,6 +1,6 @@
 # dsh-usage-reminder — 技术说明
 
-面向维护者的实现参考（中文）。用户向说明见 [../README.md](../README.md)（English）/ [../README.zh.md](../README.zh.md)。
+面向维护者的实现参考（中文）。用户向说明见 [../README.md](../README.md)（中文）/ [../README.en.md](../README.en.md)（English）。
 
 ## 一张图看注入位置
 
